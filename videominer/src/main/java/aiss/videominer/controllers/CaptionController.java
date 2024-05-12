@@ -1,5 +1,6 @@
 package aiss.videominer.controllers;
 
+import aiss.videominer.exception.CaptionNotFoundException;
 import aiss.videominer.model.Caption;
 import aiss.videominer.model.Channel;
 import aiss.videominer.repository.CaptionRepository;
@@ -22,15 +23,18 @@ public class CaptionController {
     CaptionRepository captionRepository;
 
     @GetMapping("/captions")
-    public List<Caption> findAllCaptions(){
+    public List<Caption> getAllCaptions(){
         List<Caption> captions = new LinkedList<>();
         captions = captionRepository.findAll();
         return captions;
     }
 
     @GetMapping("/captions/{captionId}")
-    public Caption getCaptionById(@PathVariable(value = "captionId") String captionId){
+    public Caption getCaptionById(@PathVariable(value = "captionId") String captionId) throws CaptionNotFoundException {
         Optional<Caption> caption= captionRepository.findById(captionId);
+        if(!caption.isPresent()){
+            throw new CaptionNotFoundException();
+        }
         return caption.get();
     }
 }

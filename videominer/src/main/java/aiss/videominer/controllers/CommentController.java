@@ -1,5 +1,6 @@
 package aiss.videominer.controllers;
 
+import aiss.videominer.exception.CommentNotFoundException;
 import aiss.videominer.model.Channel;
 import aiss.videominer.model.Comment;
 import aiss.videominer.repository.ChannelRepository;
@@ -22,15 +23,19 @@ public class CommentController {
     CommentRepository commentRepository;
 
     @GetMapping("/comments")
-    public List<Comment> findAllComments(){
+    public List<Comment> getAllComments(){
         List<Comment> comments = new LinkedList<>();
         comments = commentRepository.findAll();
         return comments;
     }
 
     @GetMapping("/comments/{commentId}")
-    public Comment getCommentById(@PathVariable(value = "commentId") String commentId){
+    public Comment getCommentById(@PathVariable(value = "commentId") String commentId) throws CommentNotFoundException {
         Optional<Comment> comment= commentRepository.findById(commentId);
+        if(!comment.isPresent()){
+            throw new CommentNotFoundException();
+        }
         return comment.get();
     }
+
 }
