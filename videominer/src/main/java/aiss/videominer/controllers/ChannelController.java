@@ -1,7 +1,10 @@
 package aiss.videominer.controllers;
 
+import aiss.videominer.exception.ChannelNotFoundException;
+import aiss.videominer.exception.GlobalExceptionHandler;
 import aiss.videominer.model.*;
 import aiss.videominer.repository.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.amqp.AbstractRabbitListenerContainerFactoryConfigurer;
 import org.springframework.http.HttpStatus;
@@ -29,24 +32,29 @@ public class ChannelController {
     UserRepository userRepository;
 
     @GetMapping("/channels")
-    public List<Channel> findAllChannels(){
+    public List<Channel> getAllChannels(){
         List<Channel> channels = new LinkedList<>();
         channels = channelRepository.findAll();
         return channels;
     }
 
     @GetMapping("/channels/{channelId}")
-    public Channel getChannelById(@PathVariable(value = "channelId") String channelId){
+    public Channel getChannelById(@PathVariable(value = "channelId") String channelId) throws ChannelNotFoundException{
         Optional<Channel> channel= channelRepository.findById(channelId);
+        if(!channel.isPresent()){
+            throw new ChannelNotFoundException();
+        }
         return channel.get();
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/channels")
-    public Channel create(@RequestBody Channel channel){;
+    public Channel createChannel(@RequestBody @Valid Channel channel){;
         List<Video> videos = channel.getVideos();
         channel.setVideos(new ArrayList<>());
+
         Channel postChannel = channelRepository.save(channel);
+
         List<Video> postVideos = new ArrayList<>();
         for(Video video: videos){
             List<Comment> comments = video.getComments();

@@ -1,6 +1,9 @@
 package aiss.videominer.controllers;
 
+import aiss.videominer.exception.VideoNotFoundException;
+import aiss.videominer.model.Caption;
 import aiss.videominer.model.Channel;
+import aiss.videominer.model.Comment;
 import aiss.videominer.model.Video;
 import aiss.videominer.repository.ChannelRepository;
 import aiss.videominer.repository.VideoRepository;
@@ -21,15 +24,41 @@ public class VideoController {
     VideoRepository videoRepository;
 
     @GetMapping("/videos")
-    public List<Video> findAllChannels(){
+    public List<Video> getAllVideos(){
         List<Video> videos = new LinkedList<>();
         videos = videoRepository.findAll();
         return videos;
     }
 
     @GetMapping("/videos/{videoId}")
-    public Video getChannelById(@PathVariable(value = "videoId") String videoId){
+    public Video getVideoById(@PathVariable(value = "videoId") String videoId) throws VideoNotFoundException {
         Optional<Video> video= videoRepository.findById(videoId);
+        if(!video.isPresent()){
+            throw new VideoNotFoundException();
+        }
         return video.get();
     }
+
+    @GetMapping("/videos/{videoId}/comments")
+    public List<Comment> getCommentsFromVideo(@PathVariable(value = "videoId") String videoId) throws VideoNotFoundException{
+        Optional<Video> video= videoRepository.findById(videoId);
+        if(!video.isPresent()){
+            throw new VideoNotFoundException();
+        }
+
+        List<Comment> comments = video.get().getComments();
+        return comments;
+    }
+
+    @GetMapping("/videos/{videoId}/captions")
+    public List<Caption> getCaptionsFromVideo(@PathVariable(value = "videoId") String videoId) throws VideoNotFoundException{
+        Optional<Video> video= videoRepository.findById(videoId);
+        if(!video.isPresent()){
+            throw new VideoNotFoundException();
+        }
+        List<Caption> captions = video.get().getCaptions();
+        return captions;
+    }
+
+
 }

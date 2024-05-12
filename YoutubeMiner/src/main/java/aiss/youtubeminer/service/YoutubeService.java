@@ -1,5 +1,6 @@
 package aiss.youtubeminer.service;
 
+import aiss.youtubeminer.exception.ChannelNotFoundException;
 import aiss.youtubeminer.model.video.*;
 import aiss.youtubeminer.model.youtube.caption.YoutubeCaption;
 import aiss.youtubeminer.model.youtube.caption.YoutubeCaptionSearch;
@@ -28,13 +29,16 @@ public class YoutubeService {
     //String token = "AIzaSyAFt_onMV_5T2m8bNt1ab6sftTNRaOOClQ";
 
     // Método para obtener información de un canal dado su ID
-    public Channel getYoutubeChannel(String token, String id) {
+    public Channel getYoutubeChannel(String token, String id) throws ChannelNotFoundException{
 
         // Construir la URI para la solicitud GET a la api de yt
         String uri = "https://www.googleapis.com/youtube/v3/channels?key="+token+"&part=snippet&id=" + id;
         // Realizar la solicitud GET y obtener la respuesta
         ResponseEntity<YoutubeChannelSearch> entity = restTemplate.getForEntity(uri, YoutubeChannelSearch.class);
         YoutubeChannelSearch youtubeChannelSearch = entity.getBody();
+        if(youtubeChannelSearch.getItems()==null){
+            throw new ChannelNotFoundException();
+        }
         YoutubeChannel youtubeChannel = youtubeChannelSearch.getItems().get(0);
 
         Channel res = new Channel();
@@ -153,7 +157,8 @@ public class YoutubeService {
 
                 res.add(comment);
             }
-        } catch(HttpClientErrorException ignored){
+        } catch(HttpClientErrorException e){
+            e.printStackTrace();
         }
 
         return res;
